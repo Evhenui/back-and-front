@@ -1,0 +1,17 @@
+### Перевірка сервера
+GET http://localhost:3000/health
+
+### Усі нотатки (порожній масив)
+GET http://localhost:3000/api/notes
+
+### Створити нотатку
+POST http://localhost:3000/api/notes
+Content-Type: application/json
+
+{
+    "title": "Перша нотатка",
+    "content": "Це моя перша нотатка"
+}
+
+### Неіснуючий id — має повернути 404
+GET http://localhost:3000/api/notes/неіснуючий
