@@ -8,13 +8,12 @@
       <button type="submit">Додати</button>
     </form>
 
-    <button @click="fetchNotes">Click me</button>
-
     <p v-if="errorMessage" style="color: red">{{ errorMessage }}</p>
 
     <ul>
       <li v-for="note in notes" :key="note.id">
         <strong>{{ note.title }}</strong> — {{ note.content }}
+        <button @click="deleteNote(note.id)">Видалити</button>
       </li>
     </ul>
   </div>
@@ -22,48 +21,56 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { api } from '../api';
 
-const API_URL = 'http://localhost:3000/api/notes';
+const emit = defineEmits(['unauthorized']);
 
 const notes = ref([]);
 const title = ref('');
 const content = ref('');
 const errorMessage = ref('');
 
+const handleError = (err, fallback) => {
+  if (err.response?.status === 401) {
+    emit('unauthorized');
+    return;
+  }
+  errorMessage.value = err.response?.data?.error || fallback;
+};
+
 const fetchNotes = async () => {
   try {
-    const res = await axios.get(API_URL);
+    const res = await api.get('/notes');
     notes.value = res.data;
-    console.log('asdasd');
   } catch (err) {
-    errorMessage.value = 'Не вдалось завантажити нотатки';
-    console.error(err);
+    handleError(err, 'Не вдалось завантажити нотатки');
   }
 };
 
 const addNote = async () => {
   errorMessage.value = '';
-
   try {
-    const res = await axios.post(API_URL, {
+    const res = await api.post('/notes', {
       title: title.value,
       content: content.value,
     });
-
-    notes.value.push(res.data);
+    notes.value.unshift(res.data);
     title.value = '';
     content.value = '';
   } catch (err) {
-    errorMessage.value = err.response?.data?.message || 'Помилка створення нотатки';
+    handleError(err, 'Помилка створення нотатки');
+  }
+};
+
+const deleteNote = async (id) => {
+  errorMessage.value = '';
+  try {
+    await api.delete(`/notes/${id}`);
+    notes.value = notes.value.filter((n) => n.id !== id);
+  } catch (err) {
+    handleError(err, 'Помилка видалення нотатки');
   }
 };
 
 onMounted(fetchNotes);
 </script>
-
-<style scoped lang="scss">
-
-</style>
-
-

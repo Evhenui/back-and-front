@@ -15,7 +15,7 @@ export const authService = {
       data: { email, password: hashedPassword },
     });
 
-    return { id: user.id, email: user.email }; // без пароля!
+    return { id: user.id, email: user.email }; 
   },
 
   async login(email: string, password: string) {
@@ -32,5 +32,11 @@ export const authService = {
     );
 
     return { token };
+  },
+
+  async getById(id: string) {
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) throw new AppError('User not found', 401);
+    return { id: user.id, email: user.email };
   },
 };
