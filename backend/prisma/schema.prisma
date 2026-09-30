@@ -15,6 +15,9 @@ model Note {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+
   @@map("notes")
 }
 
@@ -23,6 +26,8 @@ model User {
   email     String   @unique   
   password  String
   createdAt DateTime @default(now()) @map("created_at") 
+
+  notes Note[]
 
   @@map("users")
 }

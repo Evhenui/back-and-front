@@ -1,43 +1,34 @@
 import { prisma } from '../lib/prisma.js';
 import { NotFoundError } from '../errors';
-import { UpdateNoteInput } from '../schemas/note.js';
+import { CreateNoteInput, UpdateNoteInput } from '../schemas/note.js';
 
 export const notesService = {
-  async getAll() {
-    return prisma.note.findMany(
-      {
-        orderBy: {
-          createdAt: 'desc'
-        }
-      }
-    )
+  async getAll(userId: string) {
+    return prisma.note.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
   },
 
-  async getById(id: string) {
-    const note = await prisma.note.findUnique({
-      where: {
-        id
-      }
-    })
-    if (!note) {
+  async getById(id: string, userId: string) {
+    const note = await prisma.note.findUnique({ where: { id } });
+    if (!note || note.userId !== userId) {
       throw new NotFoundError('Note not found');
     }
     return note;
   },
   
-  async create(data: { title: string, content: string }) {
-    return prisma.note.create({
-      data
-    })
+  async create(data: CreateNoteInput, userId: string) {
+    return prisma.note.create({ data: { ...data, userId } });
   },
 
-  async update(id: string, data: UpdateNoteInput) {
-    await notesService.getById(id); 
+  async update(id: string, userId: string, data: UpdateNoteInput) {
+    await notesService.getById(id, userId);
     return prisma.note.update({ where: { id }, data });
   },
 
-  async delete(id: string) {
-    await notesService.getById(id);
+  async delete(id: string, userId: string) {
+    await notesService.getById(id, userId);
     await prisma.note.delete({ where: { id } });
   },
 }
