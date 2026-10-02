@@ -11,6 +11,12 @@ export const createNoteSchema = z.object({
     .trim()
     .min(1, { message: "Content is required" })
     .max(10000, { message: "Content must be less than 10000 characters" }),
+  tags: z.array(z
+    .string()
+    .trim()
+    .toLowerCase())
+    .max(10)
+    .optional(),
 });
 
 export type CreateNoteInput = z.infer<typeof createNoteSchema>;

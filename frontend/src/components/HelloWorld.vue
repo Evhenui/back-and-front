@@ -5,6 +5,7 @@
     <form @submit.prevent="addNote">
       <input v-model="title" placeholder="Заголовок" />
       <input v-model="content" placeholder="Текст нотатки" />
+      <input v-model="tags" placeholder="Теги (розділені комою)" />
       <button type="submit">Додати</button>
     </form>
 
@@ -13,6 +14,7 @@
     <ul>
       <li v-for="note in notes" :key="note.id">
         <strong>{{ note.title }}</strong> — {{ note.content }}
+        <strong>Теги:</strong> {{ note.tags.map(tag => tag.name).join(', ') }}
         <button @click="deleteNote(note.id)">Видалити</button>
       </li>
     </ul>
@@ -28,6 +30,7 @@ const emit = defineEmits(['unauthorized']);
 const notes = ref([]);
 const title = ref('');
 const content = ref('');
+const tags = ref([]);
 const errorMessage = ref('');
 
 const handleError = (err, fallback) => {
@@ -53,10 +56,12 @@ const addNote = async () => {
     const res = await api.post('/notes', {
       title: title.value,
       content: content.value,
+      tags: tags.value.split(',').map(tag => tag.trim()).filter(tag => tag),
     });
     notes.value.unshift(res.data);
     title.value = '';
     content.value = '';
+    tags.value = '';
   } catch (err) {
     handleError(err, 'Помилка створення нотатки');
   }
