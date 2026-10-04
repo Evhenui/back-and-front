@@ -1,10 +1,12 @@
 import { Request, Response } from 'express';
 import { notesService } from '../services/notes.js';
 import { AuthRequest } from '../middlwere/authenticate.js';
+import { listQuerySchema } from '../schemas/note-query.js';
 
 export const getAllNotes = async (req: AuthRequest, res: Response) => {
-  const notes = await notesService.getAll(req.userId as string);
-  res.json(notes);
+  const q = listQuerySchema.parse(req.query);
+  const result = await notesService.list(req.userId as string, q);
+  res.json(result);
 };
 
 export const getNoteById = async (req: AuthRequest<{ id: string }>, res: Response) => {
